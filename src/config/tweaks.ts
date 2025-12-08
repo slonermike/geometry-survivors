@@ -18,4 +18,5 @@ export default {
     minorAlpha: 0.1,
     extents: 2000,
   },
-} as const;
+  maxProjectiles: 200,
+} as const

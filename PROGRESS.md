@@ -169,15 +169,23 @@ Focus on **algorithmic and business logic:**
 - ✅ Implemented Player entity with WASD movement
 - ✅ Added background grid for visual reference
 
-**In Progress:**
+**Session 1 Completed:**
 
-- 🔄 Auto-shooting projectiles system (next: create Projectile entity)
+- ✅ Auto-shooting projectiles system working
+- ✅ Composition-based behavior system implemented
+- ✅ Object pooling with Phaser physics groups
+- ✅ Player rotates to face movement direction
+- ✅ Weapons fire on cooldown with level scaling
 
 **Key Files Created:**
 
 - `src/game/GameCanvas.tsx` - Phaser game initialization
-- `src/game/scenes/GameplayScene.tsx` - Main game scene
-- `src/game/entities/Player.ts` - Player with velocity-based movement
+- `src/game/scenes/GameplayScene.tsx` - Main game scene with projectile pooling
+- `src/game/entities/Player.ts` - Player with WASD movement, rotation, weapon firing
+- `src/game/entities/Projectile.ts` - Poolable projectile with behavior system
+- `src/game/behaviors/weapons/StraightMovement.ts` - Projectile movement behavior
+- `src/game/behaviors/util.ts` - Level-scaling parameter evaluation
+- `src/config/weapons.ts` - Weapon definitions and types
 - `src/config/constants.ts` - Base resolution (800x600)
 - `src/config/tweaks.ts` - Balance values (player speed, radius, etc.)
 
@@ -189,9 +197,53 @@ Focus on **algorithmic and business logic:**
 - Unused parameters prefixed with `_` and named for clarity
 - Config files for all tweakable values
 
-**Next Session:**
+**Weapon System Architecture:**
 
-1. Create Projectile entity class
-2. Set up physics group with object pooling
-3. Add auto-fire timer to Player
-4. Then move on to Enemy (Chaser) implementation
+- **Player Weapon Array:** Player owns `PlayerWeapon[]` - can stack multiple weapons like Vampire Survivors
+  - Each weapon has: `{ config: WeaponConfig, level: number, fireTimer: number }`
+  - No max weapon count (can add limit later)
+  - Starting weapons defined in config array
+
+- **Composition-Based Behaviors:**
+  - Projectile behaviors defined in weapon config (movement, collision, effects)
+  - Behaviors implement optional hooks: `onSpawn`, `onUpdate`, `onHitEnemy`, `onDeath`
+  - No complex behavior communication - designer chooses compatible behaviors
+  - Projectile references weapon instance (doesn't copy behaviors)
+
+- **Infinite Scaling via Functions:**
+  - Behavior params can be static values OR functions: `(level: number) => value`
+  - Allows per-stat scaling: linear, exponential, stepped, capped, etc.
+  - Examples:
+    - `damage: (level) => 10 * Math.pow(1.15, level)` - exponential
+    - `pierce: (level) => Math.floor(level / 3)` - unlock at levels 3, 6, 9...
+    - `speed: 300` - never scales
+
+- **Core Projectile Behaviors (Session 1):**
+  - `StraightMovement` - constant velocity in direction
+  - `DieOnHit` - kill projectile on enemy collision (tracks `lastHitEnemy` for O(1) lookup)
+  - `OffScreenCull` - camera-relative culling at full viewport distance
+  - `ApplyDamage` - deal damage to enemy on hit
+
+- **Future Features (Later Sessions):**
+  - Firing patterns: burst fire, charge shots, irregular timing
+  - Advanced behaviors: Pierce, Homing, Explode, Chain, SineWave, TimeToLive
+  - Non-projectile powers: auras (garlic), orbitals, zones
+
+- **Performance:**
+  - Physics group pooling for projectile reuse
+  - Single `lastHitEnemy` reference (not Set) - O(1) vs O(n)
+  - Edge case acceptable: projectile A→B→A may re-damage A
+
+**Next Steps (Session 2):**
+
+1. Create Enemy (Chaser) entity class
+2. Implement enemy spawning system
+3. Set up collision detection (projectile-enemy overlap)
+4. Implement remaining projectile behaviors:
+   - ApplyDamage (deal damage on hit)
+   - DieOnHit (despawn after hitting enemy)
+   - OffScreenCull (despawn when far off camera)
+5. XP orb drop system
+6. XP collection and leveling
+7. Basic HUD (health, XP bar, level, kills, time)
+8. Game over state

@@ -1,13 +1,15 @@
-import Phaser from 'phaser';
-import tweaks from '@/config/tweaks';
-import { Player } from '@/game/entities/Player';
-import { drawBackgroundGrid } from './utils/backgroundGrid';
+import Phaser from 'phaser'
+import tweaks from '@/config/tweaks'
+import { Player } from '@/game/entities/Player'
+import { drawBackgroundGrid } from './utils/backgroundGrid'
+import { Projectile } from '../entities/Projectile'
 
 export class GameplayScene extends Phaser.Scene {
-  private player!: Player;
+  private player!: Player
+  private projectiles!: Phaser.Physics.Arcade.Group
 
   constructor() {
-    super({ key: 'GameplayScene' });
+    super({ key: 'GameplayScene' })
   }
 
   preload() {
@@ -15,31 +17,36 @@ export class GameplayScene extends Phaser.Scene {
   }
 
   create() {
-    drawBackgroundGrid(this);
-    this.player = new Player(this, 200, 300);
+    drawBackgroundGrid(this)
+    this.projectiles = this.physics.add.group({
+      classType: Projectile,
+      maxSize: tweaks.maxProjectiles,
+      runChildUpdate: true,
+    })
+    this.player = new Player(this, this.projectiles, 200, 300)
 
     // Set initial zoom
     const zoom = Math.min(
       this.scale.width / tweaks.baseResolution.width,
       this.scale.height / tweaks.baseResolution.height
-    );
-    this.cameras.main.setZoom(zoom);
+    )
+    this.cameras.main.setZoom(zoom)
 
     // Update zoom on scale
     this.scale.on('resize', (gameSize: Phaser.Structs.Size) => {
       const newZoom = Math.min(
         gameSize.width / tweaks.baseResolution.width,
         gameSize.height / tweaks.baseResolution.height
-      );
-      this.cameras.main.setZoom(newZoom);
-    });
+      )
+      this.cameras.main.setZoom(newZoom)
+    })
 
     // Test Shape
-    this.add.circle(400, 300, 50, 0xff0000);
-    this.cameras.main.startFollow(this.player);
+    this.add.circle(400, 300, 50, 0xff0000)
+    this.cameras.main.startFollow(this.player)
   }
 
-  update(_t: number, _dt: number) {
-    this.player.update();
+  update(_t: number, dt: number) {
+    this.player.update(dt)
   }
 }
