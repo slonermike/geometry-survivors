@@ -101,13 +101,13 @@
 
 ---
 
-## Next Steps
+## Current Next Steps
 
-1. Configure Vitest
-2. Create project folder structure
-3. Set up Phaser game configuration
-4. Create GameScene with Arcade Physics
-5. Implement Player entity
+1. Create `src/game/entities/Projectile.ts` entity class
+2. Add physics group for projectiles in GameplayScene
+3. Implement auto-fire timer in Player class
+4. Create Enemy (Chaser) entity class
+5. Implement spawn system
 
 ---
 
@@ -156,7 +156,42 @@ Focus on **algorithmic and business logic:**
 
 ### Session 1 (2025-12-07)
 
-- Initial project setup
-- Configured linting and formatting with pre-commit hooks
-- Added Vitest for unit testing
-- Ready to begin core game implementation
+**Completed:**
+
+- ✅ Project setup with Vite + React + TypeScript
+- ✅ Installed dependencies: Phaser, Redux Toolkit, React-Redux, Vitest
+- ✅ Configured ESLint with exhaustive-deps (using flat config: `eslint.config.js`)
+- ✅ Configured Prettier with pre-commit hooks via husky + lint-staged
+- ✅ Set up path aliases (`@/` = `src/`)
+- ✅ Created project folder structure
+- ✅ Implemented GameCanvas component (Phaser embedded in React)
+- ✅ Implemented GameplayScene with camera zoom scaling
+- ✅ Implemented Player entity with WASD movement
+- ✅ Added background grid for visual reference
+
+**In Progress:**
+
+- 🔄 Auto-shooting projectiles system (next: create Projectile entity)
+
+**Key Files Created:**
+
+- `src/game/GameCanvas.tsx` - Phaser game initialization
+- `src/game/scenes/GameplayScene.tsx` - Main game scene
+- `src/game/entities/Player.ts` - Player with velocity-based movement
+- `src/config/constants.ts` - Base resolution (800x600)
+- `src/config/tweaks.ts` - Balance values (player speed, radius, etc.)
+
+**Technical Decisions:**
+
+- Using yarn (not npm)
+- RESIZE scale mode with camera zoom for consistent FOV
+- Velocity-based movement (not direct position manipulation)
+- Unused parameters prefixed with `_` and named for clarity
+- Config files for all tweakable values
+
+**Next Session:**
+
+1. Create Projectile entity class
+2. Set up physics group with object pooling
+3. Add auto-fire timer to Player
+4. Then move on to Enemy (Chaser) implementation
