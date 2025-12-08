@@ -15,6 +15,7 @@
 **Goal:** Playable game with basic mechanics
 
 - [ ] Phaser game canvas embedded in React app
+- [ ] Camera zoom scaling (RESIZE mode with proportional zoom based on 800x600 base resolution)
 - [ ] Player sprite (simple circle) with WASD movement
 - [ ] Auto-shooting projectiles (fires forward every 1 second)
 - [ ] Single enemy type: "Chaser" (triangle, moves toward player)
@@ -113,6 +114,7 @@
 - **Data-Driven Design:** Configs for enemies/upgrades, not hardcoded values
 - **Separation of Concerns:** Game logic in Phaser, UI logic in React
 - **Test-Driven for Core Logic:** Pure functions tested with Vitest
+- **Responsive Scaling:** RESIZE mode with camera zoom maintains consistent field of view across resolutions (base: 800x600)
 
 ### Testing Strategy
 
