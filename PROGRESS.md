@@ -69,6 +69,26 @@
 
 ---
 
+### Stretch Goals
+
+**Visual Polish:**
+
+- [ ] Animated background grid (color shifting/pulsing)
+- [ ] Custom shaders for advanced effects
+
+**Gameplay:**
+
+- [ ] Additional enemy types beyond the core 3
+- [ ] More upgrade tiers and combinations
+- [ ] Boss encounters
+
+**Performance:**
+
+- [ ] Object pooling optimizations
+- [ ] Particle system optimizations
+
+---
+
 ## Completed Setup
 
 ✅ Vite + React + TypeScript project initialized

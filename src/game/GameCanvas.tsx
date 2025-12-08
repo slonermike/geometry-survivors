@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import { useEffect, useRef } from 'react';
+import { GameplayScene } from './scenes/GameplayScene';
 
 let game: Phaser.Game | null = null;
 
@@ -45,7 +46,7 @@ export function GameCanvas() {
           debug: false, // would show collision boxen
         },
       },
-      scene: [],
+      scene: [GameplayScene],
     };
     game = new Phaser.Game(config);
 
