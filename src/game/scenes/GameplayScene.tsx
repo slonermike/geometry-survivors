@@ -20,7 +20,7 @@ export class GameplayScene extends Phaser.Scene {
     drawBackgroundGrid(this)
     this.projectiles = this.physics.add.group({
       classType: Projectile,
-      maxSize: tweaks.maxProjectiles,
+      maxSize: tweaks.projectiles.maxCount,
       runChildUpdate: true,
     })
     this.player = new Player(this, this.projectiles, 200, 300)
@@ -31,6 +31,17 @@ export class GameplayScene extends Phaser.Scene {
       this.scale.height / tweaks.baseResolution.height
     )
     this.cameras.main.setZoom(zoom)
+
+    const bloom = tweaks.rendering.bloom
+
+    this.cameras.main.postFX.addBloom(
+      bloom.color,
+      bloom.offsetX,
+      bloom.offsetY,
+      bloom.blurStrength,
+      bloom.bloomStrength,
+      bloom.steps
+    )
 
     // Update zoom on scale
     this.scale.on('resize', (gameSize: Phaser.Structs.Size) => {

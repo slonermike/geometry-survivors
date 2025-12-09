@@ -4,7 +4,7 @@ export default {
   },
   player: {
     radius: 20,
-    color: 0x00ff00,
+    color: 0x00ccff,
   },
   baseResolution: {
     width: 800,
@@ -18,5 +18,21 @@ export default {
     minorAlpha: 0.1,
     extents: 2000,
   },
-  maxProjectiles: 200,
+  projectiles: {
+    maxCount: 200,
+    maxScreenDistance: 1.5,
+  },
+  debug: {
+    physics: false,
+  },
+  rendering: {
+    bloom: {
+      color: 0xffffff,
+      offsetX: 1,
+      offsetY: 1,
+      blurStrength: 1.5,
+      bloomStrength: 1.5,
+      steps: 4,
+    },
+  },
 } as const

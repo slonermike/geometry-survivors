@@ -86,7 +86,11 @@ export class Player extends Phaser.GameObjects.Sprite {
   fireProjectile(weapon: PlayerWeapon) {
     const projectile = this.projectilePool.get() as Projectile
     if (projectile) {
-      projectile.spawn(weapon, this.x, this.y, this.rotation)
+      const despawnCallback = (pj: Projectile) => {
+        this.projectilePool.add(pj)
+        console.log('Despawning projectile')
+      }
+      projectile.spawn(weapon, despawnCallback, this.x, this.y, this.rotation)
       const weaponInfo = WEAPONS[weapon.type]
       weapon.fireTimer = evaluateScalableParam(weaponInfo.fireCooldown, weapon.level)
     }

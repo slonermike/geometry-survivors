@@ -3,8 +3,8 @@
 ## Project Status
 
 **Current Phase:** Evening 1 - Core Game Loop
-**Last Updated:** 2025-12-07
-**Status:** Setup complete, ready to begin implementation
+**Last Updated:** 2025-12-09
+**Status:** Projectiles working, ready for enemies
 
 ---
 
@@ -14,10 +14,12 @@
 
 **Goal:** Playable game with basic mechanics
 
-- [ ] Phaser game canvas embedded in React app
-- [ ] Camera zoom scaling (RESIZE mode with proportional zoom based on 800x600 base resolution)
-- [ ] Player sprite (simple circle) with WASD movement
-- [ ] Auto-shooting projectiles (fires forward every 1 second)
+- [x] Phaser game canvas embedded in React app
+- [x] Camera zoom scaling (RESIZE mode with proportional zoom based on 800x600 base resolution)
+- [x] Player sprite with WASD movement
+- [x] Player texture with tinting and bloom effects
+- [x] Auto-shooting projectiles with composition-based behaviors
+- [x] Projectile spatial culling (off-screen despawn)
 - [ ] Single enemy type: "Chaser" (triangle, moves toward player)
 - [ ] Enemy spawning every 2 seconds at random edge positions
 - [ ] Collision detection (player-enemy, projectile-enemy)
@@ -103,11 +105,11 @@
 
 ## Current Next Steps
 
-1. Create `src/game/entities/Projectile.ts` entity class
-2. Add physics group for projectiles in GameplayScene
-3. Implement auto-fire timer in Player class
-4. Create Enemy (Chaser) entity class
-5. Implement spawn system
+1. Add textures to projectiles (switch from Graphics to Sprite)
+2. Create Enemy (Chaser) entity class
+3. Implement enemy spawning system
+4. Set up collision detection (projectile-enemy, player-enemy overlap)
+5. Implement ApplyDamage and DieOnHit behaviors
 
 ---
 
@@ -169,13 +171,21 @@ Focus on **algorithmic and business logic:**
 - ✅ Implemented Player entity with WASD movement
 - ✅ Added background grid for visual reference
 
-**Session 1 Completed:**
+**Session 1 Completed (2025-12-07):**
 
 - ✅ Auto-shooting projectiles system working
 - ✅ Composition-based behavior system implemented
 - ✅ Object pooling with Phaser physics groups
 - ✅ Player rotates to face movement direction
 - ✅ Weapons fire on cooldown with level scaling
+
+**Session 2 Completed (2025-12-09):**
+
+- ✅ Entity textures (player uses entity-swirl.png)
+- ✅ Sprite scaling system (calculates scale from texture size to match config)
+- ✅ Physics body scale-space handling (texture-space vs world-space)
+- ✅ Bloom post-processing effect on camera
+- ✅ Projectile spatial culling with squared distance optimization
 
 **Key Files Created:**
 
@@ -234,16 +244,16 @@ Focus on **algorithmic and business logic:**
   - Single `lastHitEnemy` reference (not Set) - O(1) vs O(n)
   - Edge case acceptable: projectile A→B→A may re-damage A
 
-**Next Steps (Session 2):**
+**Next Steps (Session 3):**
 
-1. Create Enemy (Chaser) entity class
-2. Implement enemy spawning system
-3. Set up collision detection (projectile-enemy overlap)
-4. Implement remaining projectile behaviors:
+1. Add textures to projectiles
+2. Create Enemy (Chaser) entity class
+3. Implement enemy spawning system
+4. Set up collision detection (projectile-enemy overlap)
+5. Implement remaining projectile behaviors:
    - ApplyDamage (deal damage on hit)
    - DieOnHit (despawn after hitting enemy)
-   - OffScreenCull (despawn when far off camera)
-5. XP orb drop system
-6. XP collection and leveling
-7. Basic HUD (health, XP bar, level, kills, time)
-8. Game over state
+6. XP orb drop system
+7. XP collection and leveling
+8. Basic HUD (health, XP bar, level, kills, time)
+9. Game over state

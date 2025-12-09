@@ -1,6 +1,7 @@
 import Phaser from 'phaser'
 import { useEffect, useRef } from 'react'
 import { GameplayScene } from './scenes/GameplayScene'
+import tweaks from '@/config/tweaks'
 
 let game: Phaser.Game | null = null
 
@@ -43,7 +44,7 @@ export function GameCanvas() {
         default: 'arcade',
         arcade: {
           gravity: { x: 0, y: 0 },
-          debug: true, // would show collision boxen
+          debug: tweaks.debug.physics, // would show collision boxen
         },
       },
       scene: [GameplayScene],

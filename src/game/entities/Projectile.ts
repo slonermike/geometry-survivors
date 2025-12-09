@@ -2,13 +2,18 @@ import { WEAPONS } from '@/config/weapons'
 import type { PlayerWeapon } from './Player'
 import { evaluateScalableParam } from '../behaviors/util'
 import type { Enemy } from './Enemy'
+import tweaks from '@/config/tweaks'
+
+type ProjectileDespawnCallback = (pj: Projectile) => void
 
 export class Projectile extends Phaser.GameObjects.Graphics {
   private weaponConfig: PlayerWeapon
+  private despawnCallback: ProjectileDespawnCallback | null
   private lastHitEnemy: Enemy | null
 
   constructor(scene: Phaser.Scene) {
     super(scene)
+    this.despawnCallback = null
     this.lastHitEnemy = null
     this.weaponConfig = {
       type: 'pistol',
@@ -19,11 +24,28 @@ export class Projectile extends Phaser.GameObjects.Graphics {
     scene.add.existing(this)
   }
 
-  public spawn(weaponConfig: PlayerWeapon, x: number, y: number, rotation: number) {
+  /**
+   * Sets up a projectile after it's been allocated from its pool.
+   *
+   * @param weaponConfig Gives parameters the projectile instance needs to apply its properties
+   * @param despawnCallback Callback where the owner handles pooling
+   * @param x Spawn Position
+   * @param y Spawn Position
+   * @param rotation Spawn Rotation
+   */
+  public spawn(
+    weaponConfig: PlayerWeapon,
+    despawnCallback: ProjectileDespawnCallback,
+    x: number,
+    y: number,
+    rotation: number
+  ) {
     // Restore to scene
     this.setActive(true)
     this.setVisible(true)
     this.getPhysicsBody().enable = true
+
+    this.despawnCallback = despawnCallback
 
     this.weaponConfig = weaponConfig
     const physics = this.getPhysicsBody()
@@ -59,9 +81,30 @@ export class Projectile extends Phaser.GameObjects.Graphics {
     for (const behavior of WEAPONS[this.weaponConfig.type].behaviors) {
       behavior.onUpdate?.(this, dt)
     }
+    this.handleSpatialDespawn()
   }
 
+  public handleSpatialDespawn() {
+    const camera = this.scene.cameras.main
+    const cameraWorldSize = Math.max(camera.width, camera.height) / camera.zoom
+    const maxDist = cameraWorldSize * tweaks.projectiles.maxScreenDistance
+    const distFromCameraSq = Phaser.Math.Distance.BetweenPointsSquared(
+      { x: camera.centerX, y: camera.centerY },
+      this
+    )
+    if (distFromCameraSq > maxDist * maxDist) {
+      this.despawn()
+    }
+  }
+
+  /**
+   * Shuts down the projectile and returns it to its pool.
+   */
   public despawn() {
+    if (!this.active) {
+      return
+    }
+
     for (const behavior of WEAPONS[this.weaponConfig.type].behaviors) {
       behavior.onDeath?.(this)
     }
@@ -74,6 +117,9 @@ export class Projectile extends Phaser.GameObjects.Graphics {
     this.getPhysicsBody().enable = false
 
     this.lastHitEnemy = null
+
+    this.despawnCallback?.(this)
+    this.despawnCallback = null
   }
 
   public hitEnemy(enemy: Enemy) {
