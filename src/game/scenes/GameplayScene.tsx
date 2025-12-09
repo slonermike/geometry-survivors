@@ -13,7 +13,7 @@ export class GameplayScene extends Phaser.Scene {
   }
 
   preload() {
-    // no-op
+    this.load.image('entity-swirl', '/entity-swirl.png')
   }
 
   create() {

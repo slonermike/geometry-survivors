@@ -11,7 +11,7 @@ export interface PlayerWeapon {
   fireTimer: number
 }
 
-export class Player extends Phaser.GameObjects.Graphics {
+export class Player extends Phaser.GameObjects.Sprite {
   private speedMultiplier = 1.0
   private cursors: Phaser.Types.Input.Keyboard.CursorKeys | undefined
   private projectilePool: Phaser.Physics.Arcade.Group
@@ -23,7 +23,7 @@ export class Player extends Phaser.GameObjects.Graphics {
     x: number,
     y: number
   ) {
-    super(scene)
+    super(scene, 0, 0, 'entity-swirl')
     this.projectilePool = projectilePool
     this.weapons = STARTING_WEAPONS.map((type) => ({
       type,
@@ -31,8 +31,10 @@ export class Player extends Phaser.GameObjects.Graphics {
       fireTimer: 0,
     }))
 
-    this.fillStyle(tweaks.player.color, 1)
-    this.fillCircle(0, 0, tweaks.player.radius)
+    this.setTint(tweaks.player.color)
+    const scale = (tweaks.player.radius * 2) / this.width
+    this.setScale(scale)
+    this.setSize(tweaks.player.radius * 2, tweaks.player.radius * 2)
 
     this.setPosition(x, y)
     scene.add.existing(this)
@@ -41,7 +43,8 @@ export class Player extends Phaser.GameObjects.Graphics {
 
     if (this.body) {
       const physicsBody = this.body as Phaser.Physics.Arcade.Body
-      physicsBody.setCircle(tweaks.player.radius)
+      physicsBody.setCircle(tweaks.player.radius / scale)
+      physicsBody.setOffset(tweaks.player.radius, tweaks.player.radius)
     } else {
       throw new Error('player has no physics body in constructor')
     }

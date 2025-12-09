@@ -1,27 +1,27 @@
-import Phaser from 'phaser';
-import { useEffect, useRef } from 'react';
-import { GameplayScene } from './scenes/GameplayScene';
+import Phaser from 'phaser'
+import { useEffect, useRef } from 'react'
+import { GameplayScene } from './scenes/GameplayScene'
 
-let game: Phaser.Game | null = null;
+let game: Phaser.Game | null = null
 
 export function GameCanvas() {
-  const containerRef = useRef<HTMLDivElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     if (!containerRef.current) {
-      return;
+      return
     }
 
     if (containerRef.current.clientWidth === 0 || containerRef.current.clientHeight === 0) {
       console.warn(
         `Client rect size invalid for game container: ${containerRef.current.clientWidth}, ${containerRef.current.clientHeight}`
-      );
-      return;
+      )
+      return
     }
 
     if (game) {
-      console.warn('Attempting to reinitialize game when it has already been created');
-      return;
+      console.warn('Attempting to reinitialize game when it has already been created')
+      return
     }
 
     const config: Phaser.Types.Core.GameConfig = {
@@ -43,18 +43,18 @@ export function GameCanvas() {
         default: 'arcade',
         arcade: {
           gravity: { x: 0, y: 0 },
-          debug: false, // would show collision boxen
+          debug: true, // would show collision boxen
         },
       },
       scene: [GameplayScene],
-    };
-    game = new Phaser.Game(config);
+    }
+    game = new Phaser.Game(config)
 
     return () => {
-      game?.destroy(true, false);
-      game = null;
-    };
-  }, []);
+      game?.destroy(true, false)
+      game = null
+    }
+  }, [])
 
   return (
     <div
@@ -67,5 +67,5 @@ export function GameCanvas() {
         height: '100%',
       }}
     />
-  );
+  )
 }
