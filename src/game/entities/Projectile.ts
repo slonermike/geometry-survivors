@@ -6,13 +6,13 @@ import tweaks from '@/config/tweaks'
 
 type ProjectileDespawnCallback = (pj: Projectile) => void
 
-export class Projectile extends Phaser.GameObjects.Graphics {
+export class Projectile extends Phaser.GameObjects.Sprite {
   private weaponConfig: PlayerWeapon
   private despawnCallback: ProjectileDespawnCallback | null
   private lastHitEnemy: Enemy | null
 
   constructor(scene: Phaser.Scene) {
-    super(scene)
+    super(scene, 0, 0, 'entity-splat')
     this.despawnCallback = null
     this.lastHitEnemy = null
     this.weaponConfig = {
@@ -52,23 +52,17 @@ export class Projectile extends Phaser.GameObjects.Graphics {
 
     const wpn = WEAPONS[weaponConfig.type]
 
-    this.clear()
-    this.fillStyle(wpn.projectileColor, 1)
-    const radius = evaluateScalableParam(wpn.projectileRadius, weaponConfig.level)
-    switch (wpn.projectileShape) {
-      case 'square':
-        this.fillRect(0, 0, radius, radius)
-        break
-      case 'triangle':
-        this.fillTriangle(-0.5 * radius, 0, 0.5 * radius, 0, 0, radius)
-        break
-      case 'circle':
-      default:
-        this.fillCircle(0, 0, radius)
-        break
-    }
+    // TODO...
+    this.setTexture('entity-splat')
+    this.setTint(wpn.projectileColor)
 
-    physics.setCircle(radius)
+    const radius = evaluateScalableParam(wpn.projectileRadius, weaponConfig.level)
+    const scale = (radius * 2) / this.width
+    this.setScale(scale)
+
+    physics.setCircle(radius / scale)
+    physics.setOffset(radius, radius)
+
     this.setPosition(x, y)
     this.setRotation(rotation)
 

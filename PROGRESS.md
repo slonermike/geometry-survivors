@@ -105,7 +105,7 @@
 
 ## Current Next Steps
 
-1. Add textures to projectiles (switch from Graphics to Sprite)
+1. Add per-weapon projectile texture config (all currently use entity-splat)
 2. Create Enemy (Chaser) entity class
 3. Implement enemy spawning system
 4. Set up collision detection (projectile-enemy, player-enemy overlap)
@@ -186,6 +186,8 @@ Focus on **algorithmic and business logic:**
 - ✅ Physics body scale-space handling (texture-space vs world-space)
 - ✅ Bloom post-processing effect on camera
 - ✅ Projectile spatial culling with squared distance optimization
+- ✅ Converted projectiles from Graphics to Sprite (entity-splat.png default)
+- ✅ Projectiles use tinting and scale matching pattern
 
 **Key Files Created:**
 
@@ -246,7 +248,7 @@ Focus on **algorithmic and business logic:**
 
 **Next Steps (Session 3):**
 
-1. Add textures to projectiles
+1. Add per-weapon projectile texture config (currently all use entity-splat)
 2. Create Enemy (Chaser) entity class
 3. Implement enemy spawning system
 4. Set up collision detection (projectile-enemy overlap)

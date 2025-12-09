@@ -23,7 +23,7 @@ export default {
     maxScreenDistance: 1.5,
   },
   debug: {
-    physics: false,
+    physics: true,
   },
   rendering: {
     bloom: {
