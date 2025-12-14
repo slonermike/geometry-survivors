@@ -1,12 +1,12 @@
 import type { Projectile } from '@/game/entities/Projectile'
 import { evaluateScalableParam } from '../util'
-import type { ProjectileBehavior } from './types'
+import type { EntityBehavior } from './types'
 
 interface PjBehaviorStraightMovementProps {
   speed: number | ((level: number) => number)
 }
 
-export class PjBehaviorStraightMovement implements ProjectileBehavior {
+export class PjBehaviorStraightMovement implements EntityBehavior<Projectile> {
   private props: PjBehaviorStraightMovementProps
   public constructor(props: PjBehaviorStraightMovementProps) {
     this.props = props

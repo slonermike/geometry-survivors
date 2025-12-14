@@ -1,13 +1,6 @@
-import type { Enemy } from '@/game/entities/Enemy'
-import type { Projectile } from '@/game/entities/Projectile'
 import type { DisplayString } from '@/types'
-
-export interface EnemyBehavior {
-  onSpawn?: (enemy: Enemy) => void
-  onUpdate?: (enemy: Enemy, dt: number) => void
-  onDamaged?: (enemy: Enemy, damage: number, source?: Projectile) => void
-  onDeath?: (enemy: Enemy, source?: Projectile) => void
-}
+import type { EntityBehavior } from '../weapons/types'
+import type { Enemy } from '@/game/entities/Enemy'
 
 // ============================================================================
 // Enemy Config Types
@@ -32,5 +25,5 @@ export interface EnemyConfig {
   radius: number
 
   // Behaviors define all enemy logic
-  behaviors: EnemyBehavior[]
+  behaviors: EntityBehavior<Enemy>[]
 }

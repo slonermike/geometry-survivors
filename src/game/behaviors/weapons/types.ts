@@ -1,4 +1,4 @@
-import type { Enemy } from '@/game/entities/Enemy'
+import type { GameEntity } from '@/game/entities/GameEntity'
 import type { Projectile } from '@/game/entities/Projectile'
 import type { DisplayString } from '@/types'
 
@@ -6,11 +6,11 @@ import type { DisplayString } from '@/types'
 // Behavior System Types
 // ============================================================================
 
-export interface ProjectileBehavior {
-  onSpawn?(projectile: Projectile): void
-  onUpdate?(projectile: Projectile, dt: number): void
-  onHitEnemy?(projectile: Projectile, enemy: Enemy): void
-  onDeath?(projectile: Projectile): void
+export interface EntityBehavior<TEntity extends GameEntity> {
+  onSpawn?(entity: TEntity): void
+  onUpdate?(entity: TEntity, dt: number): void
+  onHitOther?(entity: TEntity, other: GameEntity): void
+  onDespawn?(entity: TEntity): void
 }
 
 // ============================================================================
@@ -30,5 +30,5 @@ export interface WeaponConfig {
   projectileShape: 'circle' | 'square' | 'triangle'
 
   // Behaviors define all projectile logic
-  behaviors: ProjectileBehavior[]
+  behaviors: EntityBehavior<Projectile>[]
 }

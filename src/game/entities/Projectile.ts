@@ -1,27 +1,22 @@
 import { WEAPON_PROPERTIES } from '@/config/weapons'
 import type { PlayerWeapon } from './Player'
 import { evaluateScalableParam } from '../behaviors/util'
-import type { Enemy } from './Enemy'
+import { Enemy } from './Enemy'
 import tweaks from '@/config/tweaks'
+import { GameEntity, type EntityDespawnCallback, type SpawnTransform } from './GameEntity'
 
-type ProjectileDespawnCallback = (pj: Projectile) => void
-
-export class Projectile extends Phaser.GameObjects.Sprite {
+export class Projectile extends GameEntity {
   private weaponConfig: PlayerWeapon
-  private despawnCallback: ProjectileDespawnCallback | null
   private lastHitEnemy: Enemy | null
 
   constructor(scene: Phaser.Scene) {
-    super(scene, 0, 0, 'entity-splat')
-    this.despawnCallback = null
+    super(scene)
     this.lastHitEnemy = null
     this.weaponConfig = {
       type: 'pistol',
       level: 0,
       fireTimer: 0,
     }
-    scene.physics.add.existing(this)
-    scene.add.existing(this)
   }
 
   /**
@@ -35,36 +30,18 @@ export class Projectile extends Phaser.GameObjects.Sprite {
    */
   public spawn(
     weaponConfig: PlayerWeapon,
-    despawnCallback: ProjectileDespawnCallback,
-    x: number,
-    y: number,
-    rotation: number
+    despawnCallback: EntityDespawnCallback,
+    transform: SpawnTransform
   ) {
-    // Restore to scene
-    this.setActive(true)
-    this.setVisible(true)
-    this.getPhysicsBody().enable = true
-
-    this.despawnCallback = despawnCallback
-
-    this.weaponConfig = weaponConfig
-    const physics = this.getPhysicsBody()
-
     const wpn = WEAPON_PROPERTIES[weaponConfig.type]
-
-    // TODO...
-    this.setTexture('entity-splat')
-    this.setTint(wpn.projectileColor)
-
-    const radius = evaluateScalableParam(wpn.projectileRadius, weaponConfig.level)
-    const scale = (radius * 2) / this.width
-    this.setScale(scale)
-
-    physics.setCircle(radius / scale)
-    physics.setOffset(radius, radius)
-
-    this.setPosition(x, y)
-    this.setRotation(rotation)
+    this.spawnBase(
+      transform,
+      'entity-splat', // TODO
+      evaluateScalableParam(wpn.projectileColor, weaponConfig.level),
+      evaluateScalableParam(wpn.projectileRadius, weaponConfig.level),
+      despawnCallback
+    )
+    this.weaponConfig = weaponConfig
 
     for (const behavior of wpn.behaviors) {
       behavior.onSpawn?.(this)
@@ -83,7 +60,7 @@ export class Projectile extends Phaser.GameObjects.Sprite {
     const cameraWorldSize = Math.max(camera.width, camera.height) / camera.zoom
     const maxDist = cameraWorldSize * tweaks.projectiles.maxScreenDistance
     const distFromCameraSq = Phaser.Math.Distance.BetweenPointsSquared(
-      { x: camera.centerX, y: camera.centerY },
+      { x: camera.worldView.centerX, y: camera.worldView.centerY },
       this
     )
     if (distFromCameraSq > maxDist * maxDist) {
@@ -100,36 +77,26 @@ export class Projectile extends Phaser.GameObjects.Sprite {
     }
 
     for (const behavior of WEAPON_PROPERTIES[this.weaponConfig.type].behaviors) {
-      behavior.onDeath?.(this)
+      behavior.onDespawn?.(this)
     }
-
-    this.getPhysicsBody().setVelocity(0, 0)
-
-    // Remove from scene
-    this.setActive(false)
-    this.setVisible(false)
-    this.getPhysicsBody().enable = false
 
     this.lastHitEnemy = null
 
-    this.despawnCallback?.(this)
-    this.despawnCallback = null
+    super.despawn()
   }
 
-  public hitEnemy(enemy: Enemy) {
-    if (enemy === this.lastHitEnemy) {
+  public hitOther(entity: GameEntity) {
+    if (entity === this.lastHitEnemy) {
       return
     }
 
-    this.lastHitEnemy = enemy
+    if (entity instanceof Enemy) {
+      this.lastHitEnemy = entity
+    }
 
     for (const behavior of WEAPON_PROPERTIES[this.weaponConfig.type].behaviors) {
-      behavior.onHitEnemy?.(this, enemy)
+      behavior.onHitOther?.(this, entity)
     }
-  }
-
-  public getPhysicsBody(): Phaser.Physics.Arcade.Body {
-    return this.body as Phaser.Physics.Arcade.Body
   }
 
   public getLevel() {

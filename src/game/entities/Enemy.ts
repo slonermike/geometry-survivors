@@ -1,6 +1,12 @@
 import { ENEMIES, type EnemyType } from '@/config/enemies'
 import { evaluateScalableParam } from '../behaviors/util'
 import type { Player } from './Player'
+import {
+  GameEntity,
+  type EntityDespawnCallback,
+  type SpawnProps,
+  type SpawnTransform,
+} from './GameEntity'
 
 export type EnemyId = string
 
@@ -10,65 +16,39 @@ export function getEnemy(id: EnemyId): Enemy | undefined {
   return enemyTable[id]
 }
 
-interface Props {
-  id: string
-  x: number
-  y: number
-  rotation: number
+interface Props extends SpawnProps {
   type: EnemyType
   level: number
-  despawnCallback?: EnemyDespawnCallback
 }
 
-type EnemyDespawnCallback = (en: Enemy) => void
-
-export class Enemy extends Phaser.GameObjects.Sprite {
-  private despawnCallback: EnemyDespawnCallback | null
+export class Enemy extends GameEntity {
   private enemyType: EnemyType
   private level: number
   private id: string
 
   constructor(scene: Phaser.Scene) {
-    super(scene, 0, 0, 'entity-hex')
+    super(scene)
     this.enemyType = 'chaser'
     this.level = 0
-    this.despawnCallback = null
     this.id = '[pre-spawn]'
-    scene.physics.add.existing(this)
-    scene.add.existing(this)
   }
 
-  public getPhysicsBody(): Phaser.Physics.Arcade.Body {
-    return this.body as Phaser.Physics.Arcade.Body
-  }
-
-  public spawn(props: Props) {
-    this.setActive(true)
-    this.setVisible(true)
-    this.getPhysicsBody().enable = true
-    this.id = props.id
-    enemyTable[this.id] = this
-
-    this.despawnCallback = props.despawnCallback ?? null
-
+  public spawn(props: Props, transform: SpawnTransform, despawnCallback: EntityDespawnCallback) {
     this.enemyType = props.type
     this.level = props.level
 
     const enProps = ENEMIES[this.enemyType]
-    const physics = this.getPhysicsBody()
 
-    this.setTexture(enProps.texture)
-    this.setTint(evaluateScalableParam(enProps.color, this.level))
+    this.id = `${enProps.name}:${props.spawnNumber}`
+    enemyTable[this.id] = this
 
-    const radius = enProps.radius
-    const scale = (radius * 2) / this.width
-    this.setScale(scale)
-
-    physics.setCircle(radius / scale)
-    physics.setOffset(radius, radius)
-
-    this.setPosition(props.x, props.y)
-    this.setRotation(props.rotation)
+    this.spawnBase(
+      transform,
+      enProps.texture,
+      evaluateScalableParam(enProps.color, this.level),
+      enProps.radius,
+      despawnCallback
+    )
 
     for (const behavior of enProps.behaviors) {
       behavior.onSpawn?.(this)
@@ -87,20 +67,12 @@ export class Enemy extends Phaser.GameObjects.Sprite {
     }
 
     for (const behavior of ENEMIES[this.enemyType].behaviors) {
-      behavior.onDeath?.(this)
+      behavior.onDespawn?.(this)
     }
 
     delete enemyTable[this.id]
 
-    this.getPhysicsBody().setVelocity(0, 0)
-
-    // Remove from scene
-    this.setActive(false)
-    this.setVisible(false)
-    this.getPhysicsBody().enable = false
-
-    this.despawnCallback?.(this)
-    this.despawnCallback = null
+    super.despawn()
   }
 
   /**
