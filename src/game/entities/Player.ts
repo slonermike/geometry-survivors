@@ -1,6 +1,6 @@
 import Phaser from 'phaser'
 import tweaks from '../../config/tweaks'
-import { STARTING_WEAPONS, WEAPONS, type WeaponType } from '@/config/weapons'
+import { STARTING_WEAPONS, WEAPON_PROPERTIES, type WeaponType } from '@/config/weapons'
 import type { GameplayScene } from '../scenes/GameplayScene'
 import type { Projectile } from './Projectile'
 import { evaluateScalableParam } from '../behaviors/util'
@@ -91,7 +91,7 @@ export class Player extends Phaser.GameObjects.Sprite {
         console.log('Despawning projectile')
       }
       projectile.spawn(weapon, despawnCallback, this.x, this.y, this.rotation)
-      const weaponInfo = WEAPONS[weapon.type]
+      const weaponInfo = WEAPON_PROPERTIES[weapon.type]
       weapon.fireTimer = evaluateScalableParam(weaponInfo.fireCooldown, weapon.level)
     }
   }

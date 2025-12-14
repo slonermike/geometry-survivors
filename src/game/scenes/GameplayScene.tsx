@@ -15,6 +15,7 @@ export class GameplayScene extends Phaser.Scene {
   preload() {
     this.load.image('entity-swirl', '/entity-swirl.png')
     this.load.image('entity-splat', '/entity-splat.png')
+    this.load.image('entity-hex', './entity-hex.png')
   }
 
   create() {

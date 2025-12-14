@@ -1,11 +1,11 @@
-import { StraightMovement } from '@/game/behaviors/weapons/StraightMovement'
+import { PjBehaviorStraightMovement } from '@/game/behaviors/weapons/PjBehaviorStraightMovement'
 import type { WeaponConfig } from '@/game/behaviors/weapons/types'
 
 // ============================================================================
 // Weapon Definitions
 // ============================================================================
 export type WeaponType = 'pistol'
-export const WEAPONS: Record<WeaponType, WeaponConfig> = {
+export const WEAPON_PROPERTIES: Record<WeaponType, WeaponConfig> = {
   // TODO: Add pistol weapon config
   pistol: {
     name: 'Pistola',
@@ -15,7 +15,7 @@ export const WEAPONS: Record<WeaponType, WeaponConfig> = {
     projectileShape: 'circle',
     projectileColor: 0x00ffff,
     behaviors: [
-      new StraightMovement({
+      new PjBehaviorStraightMovement({
         // TODO: can we memoize these to allow more complexity?
         speed: (level) => 500 + level * 0.2,
       }),

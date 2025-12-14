@@ -1,4 +1,4 @@
-import { WEAPONS } from '@/config/weapons'
+import { WEAPON_PROPERTIES } from '@/config/weapons'
 import type { PlayerWeapon } from './Player'
 import { evaluateScalableParam } from '../behaviors/util'
 import type { Enemy } from './Enemy'
@@ -50,7 +50,7 @@ export class Projectile extends Phaser.GameObjects.Sprite {
     this.weaponConfig = weaponConfig
     const physics = this.getPhysicsBody()
 
-    const wpn = WEAPONS[weaponConfig.type]
+    const wpn = WEAPON_PROPERTIES[weaponConfig.type]
 
     // TODO...
     this.setTexture('entity-splat')
@@ -72,7 +72,7 @@ export class Projectile extends Phaser.GameObjects.Sprite {
   }
 
   public update(dt: number) {
-    for (const behavior of WEAPONS[this.weaponConfig.type].behaviors) {
+    for (const behavior of WEAPON_PROPERTIES[this.weaponConfig.type].behaviors) {
       behavior.onUpdate?.(this, dt)
     }
     this.handleSpatialDespawn()
@@ -99,7 +99,7 @@ export class Projectile extends Phaser.GameObjects.Sprite {
       return
     }
 
-    for (const behavior of WEAPONS[this.weaponConfig.type].behaviors) {
+    for (const behavior of WEAPON_PROPERTIES[this.weaponConfig.type].behaviors) {
       behavior.onDeath?.(this)
     }
 
@@ -123,7 +123,7 @@ export class Projectile extends Phaser.GameObjects.Sprite {
 
     this.lastHitEnemy = enemy
 
-    for (const behavior of WEAPONS[this.weaponConfig.type].behaviors) {
+    for (const behavior of WEAPON_PROPERTIES[this.weaponConfig.type].behaviors) {
       behavior.onHitEnemy?.(this, enemy)
     }
   }

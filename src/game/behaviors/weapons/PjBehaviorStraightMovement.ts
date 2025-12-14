@@ -2,13 +2,13 @@ import type { Projectile } from '@/game/entities/Projectile'
 import { evaluateScalableParam } from '../util'
 import type { ProjectileBehavior } from './types'
 
-interface StraightMovementProps {
+interface PjBehaviorStraightMovementProps {
   speed: number | ((level: number) => number)
 }
 
-export class StraightMovement implements ProjectileBehavior {
-  private props: StraightMovementProps
-  public constructor(props: StraightMovementProps) {
+export class PjBehaviorStraightMovement implements ProjectileBehavior {
+  private props: PjBehaviorStraightMovementProps
+  public constructor(props: PjBehaviorStraightMovementProps) {
     this.props = props
   }
   public onSpawn(projectile: Projectile): void {
