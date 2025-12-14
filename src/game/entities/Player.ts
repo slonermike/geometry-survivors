@@ -6,6 +6,8 @@ import { Projectile } from './Projectile'
 import { evaluateScalableParam } from '../behaviors/util'
 import type { GameEntity } from './GameEntity'
 
+let pjIdCounter = 0
+
 export interface PlayerWeapon {
   type: WeaponType
   level: number
@@ -86,22 +88,29 @@ export class Player extends Phaser.GameObjects.Sprite {
 
   fireProjectile(weapon: PlayerWeapon) {
     const projectile = this.projectilePool.get() as Projectile
-    if (projectile) {
-      const despawnCallback = (e: GameEntity) => {
-        if (e instanceof Projectile) {
-          this.projectilePool.add(e)
-          console.log('Despawning projectile')
-        } else {
-          console.error('Non-projectile trying to despawn back to projectile pool!')
-        }
+    if (!projectile) {
+      return
+    }
+
+    const despawnCallback = (e: GameEntity) => {
+      if (!(e instanceof Projectile)) {
+        console.error('Non-projectile trying to despawn back to projectile pool!')
+        return
       }
-      projectile.spawn(weapon, despawnCallback, {
+      this.projectilePool.add(e)
+    }
+
+    projectile.spawn({
+      spawnNumber: pjIdCounter++,
+      weaponConfig: weapon,
+      transform: {
         x: this.x,
         y: this.y,
         rotation: this.rotation,
-      })
-      const weaponInfo = WEAPON_PROPERTIES[weapon.type]
-      weapon.fireTimer = evaluateScalableParam(weaponInfo.fireCooldown, weapon.level)
-    }
+      },
+      despawnCallback,
+    })
+    const weaponInfo = WEAPON_PROPERTIES[weapon.type]
+    weapon.fireTimer = evaluateScalableParam(weaponInfo.fireCooldown, weapon.level)
   }
 }

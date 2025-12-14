@@ -3,7 +3,11 @@ import type { PlayerWeapon } from './Player'
 import { evaluateScalableParam } from '../behaviors/util'
 import { Enemy } from './Enemy'
 import tweaks from '@/config/tweaks'
-import { GameEntity, type EntityDespawnCallback, type SpawnTransform } from './GameEntity'
+import { GameEntity, type SpawnProps } from './GameEntity'
+
+interface Props extends SpawnProps {
+  weaponConfig: PlayerWeapon
+}
 
 export class Projectile extends GameEntity {
   private weaponConfig: PlayerWeapon
@@ -28,20 +32,15 @@ export class Projectile extends GameEntity {
    * @param y Spawn Position
    * @param rotation Spawn Rotation
    */
-  public spawn(
-    weaponConfig: PlayerWeapon,
-    despawnCallback: EntityDespawnCallback,
-    transform: SpawnTransform
-  ) {
-    const wpn = WEAPON_PROPERTIES[weaponConfig.type]
+  public spawn(props: Props) {
+    const wpn = WEAPON_PROPERTIES[props.weaponConfig.type]
     this.spawnBase(
-      transform,
+      props,
       'entity-splat', // TODO
-      evaluateScalableParam(wpn.projectileColor, weaponConfig.level),
-      evaluateScalableParam(wpn.projectileRadius, weaponConfig.level),
-      despawnCallback
+      evaluateScalableParam(wpn.projectileColor, props.weaponConfig.level),
+      evaluateScalableParam(wpn.projectileRadius, props.weaponConfig.level)
     )
-    this.weaponConfig = weaponConfig
+    this.weaponConfig = props.weaponConfig
 
     for (const behavior of wpn.behaviors) {
       behavior.onSpawn?.(this)

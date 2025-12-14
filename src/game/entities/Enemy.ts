@@ -1,12 +1,7 @@
 import { ENEMIES, type EnemyType } from '@/config/enemies'
 import { evaluateScalableParam } from '../behaviors/util'
 import type { Player } from './Player'
-import {
-  GameEntity,
-  type EntityDespawnCallback,
-  type SpawnProps,
-  type SpawnTransform,
-} from './GameEntity'
+import { GameEntity, type SpawnProps } from './GameEntity'
 
 export type EnemyId = string
 
@@ -24,30 +19,26 @@ interface Props extends SpawnProps {
 export class Enemy extends GameEntity {
   private enemyType: EnemyType
   private level: number
-  private id: string
 
   constructor(scene: Phaser.Scene) {
     super(scene)
     this.enemyType = 'chaser'
     this.level = 0
-    this.id = '[pre-spawn]'
   }
 
-  public spawn(props: Props, transform: SpawnTransform, despawnCallback: EntityDespawnCallback) {
+  public spawn(props: Props) {
     this.enemyType = props.type
     this.level = props.level
 
     const enProps = ENEMIES[this.enemyType]
 
-    this.id = `${enProps.name}:${props.spawnNumber}`
     enemyTable[this.id] = this
 
     this.spawnBase(
-      transform,
+      props,
       enProps.texture,
       evaluateScalableParam(enProps.color, this.level),
-      enProps.radius,
-      despawnCallback
+      enProps.radius
     )
 
     for (const behavior of enProps.behaviors) {

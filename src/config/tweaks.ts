@@ -19,8 +19,11 @@ export default {
     extents: 2000,
   },
   projectiles: {
-    maxCount: 200,
     maxScreenDistance: 1.5,
+  },
+  maxCounts: {
+    projectile: 200,
+    enemy: 400,
   },
   debug: {
     physics: true,

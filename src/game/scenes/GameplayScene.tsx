@@ -2,11 +2,16 @@ import Phaser from 'phaser'
 import tweaks from '@/config/tweaks'
 import { Player } from '@/game/entities/Player'
 import { drawBackgroundGrid } from './utils/backgroundGrid'
-import { Projectile } from '../entities/Projectile'
+import { Projectile } from '@/game/entities/Projectile'
+import { Enemy } from '@/game/entities/Enemy'
+import { SpawnManager } from '@/game/managers/SpawnManager'
+import { WAVES } from '@/config/waves'
 
 export class GameplayScene extends Phaser.Scene {
   private player!: Player
   private projectiles!: Phaser.Physics.Arcade.Group
+  private enemies!: Phaser.Physics.Arcade.Group
+  private spawnManager!: SpawnManager
 
   constructor() {
     super({ key: 'GameplayScene' })
@@ -22,10 +27,16 @@ export class GameplayScene extends Phaser.Scene {
     drawBackgroundGrid(this)
     this.projectiles = this.physics.add.group({
       classType: Projectile,
-      maxSize: tweaks.projectiles.maxCount,
+      maxSize: tweaks.maxCounts.projectile,
+      runChildUpdate: true,
+    })
+    this.enemies = this.physics.add.group({
+      classType: Enemy,
+      maxSize: tweaks.maxCounts.enemy,
       runChildUpdate: true,
     })
     this.player = new Player(this, this.projectiles, 200, 300)
+    this.spawnManager = new SpawnManager(this, WAVES, this.enemies)
 
     // Set initial zoom
     const zoom = Math.min(
@@ -59,7 +70,8 @@ export class GameplayScene extends Phaser.Scene {
     this.cameras.main.startFollow(this.player)
   }
 
-  update(_t: number, dt: number) {
+  update(t: number, dt: number) {
     this.player.update(dt)
+    this.spawnManager.update(t, dt)
   }
 }
