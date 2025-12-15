@@ -6,6 +6,7 @@ import { Projectile } from '@/game/entities/Projectile'
 import { Enemy } from '@/game/entities/Enemy'
 import { SpawnManager } from '@/game/managers/SpawnManager'
 import { WAVES } from '@/config/waves'
+import type { GameEntity } from '../entities/GameEntity'
 
 export class GameplayScene extends Phaser.Scene {
   private player!: Player
@@ -37,6 +38,26 @@ export class GameplayScene extends Phaser.Scene {
     })
     this.player = new Player(this, this.projectiles, 200, 300)
     this.spawnManager = new SpawnManager(this, WAVES, this.enemies)
+
+    this.physics.add.overlap(this.projectiles, this.enemies, (obj1, en) => {
+      const pj = obj1 as Projectile
+      if (pj.active) {
+        ;(pj as Projectile).hitOther(en as GameEntity)
+      }
+    })
+    this.physics.add.overlap(
+      this.enemies,
+      this.player,
+
+      // NOTE: Some quirk in phaser means these two are flipped.
+      // This might flip back if we create a player physics group.
+      (pl, obj2) => {
+        const en = obj2 as Enemy
+        if (en.active) {
+          ;(en as Enemy).hitOther(pl as GameEntity)
+        }
+      }
+    )
 
     // Set initial zoom
     const zoom = Math.min(

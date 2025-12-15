@@ -5,18 +5,20 @@ import { Enemy } from './Enemy'
 import tweaks from '@/config/tweaks'
 import { GameEntity, type SpawnProps } from './GameEntity'
 import type { ILeveledEntity } from './ILeveledEntity'
+import type { IAggressor } from './IAggressor'
+import type { IDamageable } from './IDamageable'
 
 interface Props extends SpawnProps {
   weaponConfig: PlayerWeapon
 }
 
-export class Projectile extends GameEntity implements ILeveledEntity {
+export class Projectile extends GameEntity implements ILeveledEntity, IAggressor {
   private weaponConfig: PlayerWeapon
-  private lastHitEnemy: Enemy | null
+  private lastHitDamageable: IDamageable | null
 
   constructor(scene: Phaser.Scene) {
     super(scene)
-    this.lastHitEnemy = null
+    this.lastHitDamageable = null
     this.weaponConfig = {
       type: 'pistol',
       level: 0,
@@ -80,26 +82,31 @@ export class Projectile extends GameEntity implements ILeveledEntity {
       behavior.onDespawn?.(this)
     }
 
-    this.lastHitEnemy = null
+    this.lastHitDamageable = null
 
     super.despawn()
   }
 
-  public hitOther(entity: GameEntity) {
-    if (entity === this.lastHitEnemy) {
+  public hitOther(target: GameEntity) {
+    if (target.isDamageable() && target === this.lastHitDamageable) {
       return
     }
 
-    if (entity instanceof Enemy) {
-      this.lastHitEnemy = entity
+    if (target instanceof Enemy) {
+      this.lastHitDamageable = target
     }
 
     for (const behavior of WEAPON_PROPERTIES[this.weaponConfig.type].behaviors) {
-      behavior.onHitOther?.(this, entity)
+      behavior.onHitOther?.(this, target)
     }
   }
 
   public getLevel() {
     return this.weaponConfig.level
+  }
+
+  public getNearestTarget() {
+    // TODO -- allow homing.
+    return null
   }
 }

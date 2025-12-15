@@ -1,3 +1,5 @@
+import type { IDamageable } from './IDamageable'
+
 export interface SpawnTransform {
   x: number
   y: number
@@ -65,5 +67,9 @@ export abstract class GameEntity extends Phaser.GameObjects.Sprite {
 
   public getPhysicsBody(): Phaser.Physics.Arcade.Body {
     return this.body as Phaser.Physics.Arcade.Body
+  }
+
+  public isDamageable(): this is IDamageable {
+    return false
   }
 }

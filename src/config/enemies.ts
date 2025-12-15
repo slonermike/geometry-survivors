@@ -3,6 +3,7 @@
 // ============================================================================
 
 import { EnBehaviorChase } from '@/game/behaviors/enemies/EnBehaviorChase'
+import { EnBehaviorDieOnHit } from '@/game/behaviors/enemies/EnBehaviorDieOnHit'
 import type { EnemyConfig } from '@/game/behaviors/enemies/types'
 
 export type EnemyType = 'chaser'
@@ -30,6 +31,9 @@ export const ENEMIES: Record<EnemyType, EnemyConfig> = {
         speed(level) {
           return 100 + level * 10
         },
+      }),
+      new EnBehaviorDieOnHit({
+        damage: (level) => 10 + 2 * level,
       }),
     ],
     levelBounds: {

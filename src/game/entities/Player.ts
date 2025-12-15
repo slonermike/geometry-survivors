@@ -5,6 +5,8 @@ import type { GameplayScene } from '../scenes/GameplayScene'
 import { Projectile } from './Projectile'
 import { evaluateScalableParam } from '../behaviors/util'
 import { GameEntity } from './GameEntity'
+import type { IDamageable } from './IDamageable'
+import type { IAggressor } from './IAggressor'
 
 let pjIdCounter = 0
 let playerIdCounter = 0
@@ -15,11 +17,12 @@ export interface PlayerWeapon {
   fireTimer: number
 }
 
-export class Player extends GameEntity {
+export class Player extends GameEntity implements IDamageable {
   private speedMultiplier = 1.0
   private cursors: Phaser.Types.Input.Keyboard.CursorKeys | undefined
   private projectilePool: Phaser.Physics.Arcade.Group
   private weapons: PlayerWeapon[] = []
+  private health: number
 
   constructor(
     scene: GameplayScene,
@@ -49,6 +52,7 @@ export class Player extends GameEntity {
     )
 
     this.cursors = scene.input.keyboard?.createCursorKeys()
+    this.health = tweaks.player.baseMaxHealth
   }
 
   update(dt: number) {
@@ -108,5 +112,18 @@ export class Player extends GameEntity {
     })
     const weaponInfo = WEAPON_PROPERTIES[weapon.type]
     weapon.fireTimer = evaluateScalableParam(weaponInfo.fireCooldown, weapon.level)
+  }
+
+  doDamage(damageAmount: number, _source: IAggressor) {
+    this.health = Math.max(0, this.health - damageAmount)
+    if (this.health === 0) {
+      console.log('YA BURNT')
+    } else {
+      console.log(`HP: ${this.health}`)
+    }
+  }
+
+  public isDamageable(): this is IDamageable {
+    return true
   }
 }

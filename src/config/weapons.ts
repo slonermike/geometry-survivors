@@ -1,3 +1,4 @@
+import { PjBehaviorDieOnHit } from '@/game/behaviors/weapons/PjBehaviorDieOnHit'
 import { PjBehaviorStraightMovement } from '@/game/behaviors/weapons/PjBehaviorStraightMovement'
 import type { WeaponConfig } from '@/game/behaviors/weapons/types'
 
@@ -17,7 +18,10 @@ export const WEAPON_PROPERTIES: Record<WeaponType, WeaponConfig> = {
     behaviors: [
       new PjBehaviorStraightMovement({
         // TODO: can we memoize these to allow more complexity?
-        speed: (level) => 500 + level * 0.2,
+        speed: (level) => 500 + level * 20,
+      }),
+      new PjBehaviorDieOnHit({
+        damage: (level) => 10 + level * 2,
       }),
     ],
   },

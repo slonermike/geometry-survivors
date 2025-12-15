@@ -1,10 +1,10 @@
 import { ENEMIES, type EnemyType } from '@/config/enemies'
 import { evaluateScalableParam } from '../behaviors/util'
-import type { Player } from './Player'
 import { GameEntity, type SpawnProps } from './GameEntity'
 import type { ILeveledEntity } from './ILeveledEntity'
 import type { IAggressor } from './IAggressor'
 import { GameplayScene } from '../scenes/GameplayScene'
+import type { IDamageable } from './IDamageable'
 
 export type EnemyId = string
 
@@ -19,14 +19,16 @@ interface Props extends SpawnProps {
   level: number
 }
 
-export class Enemy extends GameEntity implements ILeveledEntity, IAggressor {
+export class Enemy extends GameEntity implements ILeveledEntity, IAggressor, IDamageable {
   private enemyType: EnemyType
   private level: number
+  private health: number
 
   constructor(scene: Phaser.Scene) {
     super(scene)
     this.enemyType = 'chaser'
     this.level = 0
+    this.health = 0
   }
 
   public getLevel() {
@@ -37,9 +39,10 @@ export class Enemy extends GameEntity implements ILeveledEntity, IAggressor {
     this.enemyType = props.type
     this.level = props.level
 
-    const enProps = ENEMIES[this.enemyType]
-
     enemyTable[this.id] = this
+
+    const enProps = ENEMIES[this.enemyType]
+    this.health = evaluateScalableParam(enProps.maxHealth, this)
 
     this.spawnBase(
       props,
@@ -73,19 +76,28 @@ export class Enemy extends GameEntity implements ILeveledEntity, IAggressor {
     super.despawn()
   }
 
-  /**
-   * TODO...
-   * Do we do this per frame or per overlap start?
-   * Probably per frame, scaled by dt...
-   * @param player
-   */
-  public overlapPlayer(_player: Player) {}
-
   public getNearestTarget() {
     if (!(this.scene instanceof GameplayScene)) {
       return null
     }
 
     return this.scene.getPlayer()
+  }
+
+  public doDamage(damageAmount: number, _source: IAggressor) {
+    this.health = Math.max(0, this.health - damageAmount)
+    if (this.health === 0) {
+      this.despawn()
+    }
+  }
+
+  public isDamageable(): this is IDamageable {
+    return true
+  }
+
+  public hitOther(target: GameEntity) {
+    for (const behavior of ENEMIES[this.enemyType].behaviors) {
+      behavior.onHitOther?.(this, target)
+    }
   }
 }

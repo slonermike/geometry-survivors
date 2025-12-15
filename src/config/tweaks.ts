@@ -5,6 +5,7 @@ export default {
   player: {
     radius: 20,
     color: 0x00ccff,
+    baseMaxHealth: 100,
   },
   baseResolution: {
     width: 800,
