@@ -4,9 +4,10 @@ import { STARTING_WEAPONS, WEAPON_PROPERTIES, type WeaponType } from '@/config/w
 import type { GameplayScene } from '../scenes/GameplayScene'
 import { Projectile } from './Projectile'
 import { evaluateScalableParam } from '../behaviors/util'
-import type { GameEntity } from './GameEntity'
+import { GameEntity } from './GameEntity'
 
 let pjIdCounter = 0
+let playerIdCounter = 0
 
 export interface PlayerWeapon {
   type: WeaponType
@@ -14,7 +15,7 @@ export interface PlayerWeapon {
   fireTimer: number
 }
 
-export class Player extends Phaser.GameObjects.Sprite {
+export class Player extends GameEntity {
   private speedMultiplier = 1.0
   private cursors: Phaser.Types.Input.Keyboard.CursorKeys | undefined
   private projectilePool: Phaser.Physics.Arcade.Group
@@ -26,31 +27,26 @@ export class Player extends Phaser.GameObjects.Sprite {
     x: number,
     y: number
   ) {
-    super(scene, 0, 0, 'entity-swirl')
+    super(scene)
     this.projectilePool = projectilePool
     this.weapons = STARTING_WEAPONS.map((type) => ({
       type,
       level: 0,
       fireTimer: 0,
     }))
-
-    this.setTint(tweaks.player.color)
-    const scale = (tweaks.player.radius * 2) / this.width
-    this.setScale(scale)
-    this.setSize(tweaks.player.radius * 2, tweaks.player.radius * 2)
-
-    this.setPosition(x, y)
-    scene.add.existing(this)
-
-    scene.physics.add.existing(this)
-
-    if (this.body) {
-      const physicsBody = this.body as Phaser.Physics.Arcade.Body
-      physicsBody.setCircle(tweaks.player.radius / scale)
-      physicsBody.setOffset(tweaks.player.radius, tweaks.player.radius)
-    } else {
-      throw new Error('player has no physics body in constructor')
-    }
+    this.spawnBase(
+      {
+        spawnNumber: playerIdCounter++,
+        transform: {
+          x,
+          y,
+          rotation: 0,
+        },
+      },
+      'entity-swirl',
+      tweaks.player.color,
+      tweaks.player.radius
+    )
 
     this.cursors = scene.input.keyboard?.createCursorKeys()
   }

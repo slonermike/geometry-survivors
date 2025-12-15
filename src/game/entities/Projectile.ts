@@ -4,12 +4,13 @@ import { evaluateScalableParam } from '../behaviors/util'
 import { Enemy } from './Enemy'
 import tweaks from '@/config/tweaks'
 import { GameEntity, type SpawnProps } from './GameEntity'
+import type { ILeveledEntity } from './ILeveledEntity'
 
 interface Props extends SpawnProps {
   weaponConfig: PlayerWeapon
 }
 
-export class Projectile extends GameEntity {
+export class Projectile extends GameEntity implements ILeveledEntity {
   private weaponConfig: PlayerWeapon
   private lastHitEnemy: Enemy | null
 
@@ -37,8 +38,8 @@ export class Projectile extends GameEntity {
     this.spawnBase(
       props,
       'entity-splat', // TODO
-      evaluateScalableParam(wpn.projectileColor, props.weaponConfig.level),
-      evaluateScalableParam(wpn.projectileRadius, props.weaponConfig.level)
+      evaluateScalableParam(wpn.projectileColor, this),
+      evaluateScalableParam(wpn.projectileRadius, this)
     )
     this.weaponConfig = props.weaponConfig
 

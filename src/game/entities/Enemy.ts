@@ -2,6 +2,9 @@ import { ENEMIES, type EnemyType } from '@/config/enemies'
 import { evaluateScalableParam } from '../behaviors/util'
 import type { Player } from './Player'
 import { GameEntity, type SpawnProps } from './GameEntity'
+import type { ILeveledEntity } from './ILeveledEntity'
+import type { IAggressor } from './IAggressor'
+import { GameplayScene } from '../scenes/GameplayScene'
 
 export type EnemyId = string
 
@@ -16,7 +19,7 @@ interface Props extends SpawnProps {
   level: number
 }
 
-export class Enemy extends GameEntity {
+export class Enemy extends GameEntity implements ILeveledEntity, IAggressor {
   private enemyType: EnemyType
   private level: number
 
@@ -24,6 +27,10 @@ export class Enemy extends GameEntity {
     super(scene)
     this.enemyType = 'chaser'
     this.level = 0
+  }
+
+  public getLevel() {
+    return this.level
   }
 
   public spawn(props: Props) {
@@ -37,7 +44,7 @@ export class Enemy extends GameEntity {
     this.spawnBase(
       props,
       enProps.texture,
-      evaluateScalableParam(enProps.color, this.level),
+      evaluateScalableParam(enProps.color, this),
       enProps.radius
     )
 
@@ -73,4 +80,12 @@ export class Enemy extends GameEntity {
    * @param player
    */
   public overlapPlayer(_player: Player) {}
+
+  public getNearestTarget() {
+    if (!(this.scene instanceof GameplayScene)) {
+      return null
+    }
+
+    return this.scene.getPlayer()
+  }
 }

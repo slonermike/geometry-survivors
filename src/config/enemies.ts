@@ -2,6 +2,7 @@
 // Enemy Type Definitions
 // ============================================================================
 
+import { EnBehaviorChase } from '@/game/behaviors/enemies/EnBehaviorChase'
 import type { EnemyConfig } from '@/game/behaviors/enemies/types'
 
 export type EnemyType = 'chaser'
@@ -14,8 +15,6 @@ export const ENEMIES: Record<EnemyType, EnemyConfig> = {
   chaser: {
     name: 'Chaser',
     maxHealth: (level) => 10 + level * 5,
-    speed: 100,
-    damage: 10,
     xpDrop: (level) => 5 + level * 2,
     texture: 'entity-hex',
     color: (level) => {
@@ -26,7 +25,13 @@ export const ENEMIES: Record<EnemyType, EnemyConfig> = {
       return (r << 16) | (g << 8) | b
     },
     radius: 15,
-    behaviors: [], // Will add EnemyBehaviorChase after we define the interface
+    behaviors: [
+      new EnBehaviorChase({
+        speed(level) {
+          return 100 + level * 10
+        },
+      }),
+    ],
     levelBounds: {
       min: 0,
       max: 5,

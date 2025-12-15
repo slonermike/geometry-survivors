@@ -74,4 +74,8 @@ export class GameplayScene extends Phaser.Scene {
     this.player.update(dt)
     this.spawnManager.update(t, dt)
   }
+
+  getPlayer(): Player | null {
+    return this.player
+  }
 }

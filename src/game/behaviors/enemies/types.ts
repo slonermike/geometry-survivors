@@ -11,8 +11,6 @@ export interface EnemyConfig {
 
   // Stats
   maxHealth: number | ((level: number) => number)
-  speed: number | ((level: number) => number)
-  damage: number | ((level: number) => number)
   xpDrop: number | ((level: number) => number)
   levelBounds: {
     min: number
