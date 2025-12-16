@@ -3,8 +3,8 @@
 ## Project Status
 
 **Current Phase:** Evening 1 - Core Game Loop
-**Last Updated:** 2025-12-09
-**Status:** Projectiles working, ready for enemies
+**Last Updated:** 2025-12-15
+**Status:** Combat system complete, ready for XP/leveling
 
 ---
 
@@ -20,10 +20,11 @@
 - [x] Player texture with tinting and bloom effects
 - [x] Auto-shooting projectiles with composition-based behaviors
 - [x] Projectile spatial culling (off-screen despawn)
-- [ ] Single enemy type: "Chaser" (triangle, moves toward player)
-- [ ] Enemy spawning every 2 seconds at random edge positions
-- [ ] Collision detection (player-enemy, projectile-enemy)
-- [ ] Enemy dies at 0 HP, drops XP orb
+- [x] Single enemy type: "Chaser" (triangle, moves toward player)
+- [x] Enemy spawning system with wave-based configuration
+- [x] Collision detection (player-enemy, projectile-enemy)
+- [x] Enemy dies at 0 HP
+- [ ] XP orb drop on enemy death
 - [ ] Player collects XP, levels up at thresholds
 - [ ] Basic HUD showing health, XP bar, level, kills, time
 - [ ] Game over when player health reaches 0
@@ -105,11 +106,11 @@
 
 ## Current Next Steps
 
-1. Add per-weapon projectile texture config (all currently use entity-splat)
-2. Create Enemy (Chaser) entity class
-3. Implement enemy spawning system
-4. Set up collision detection (projectile-enemy, player-enemy overlap)
-5. Implement ApplyDamage and DieOnHit behaviors
+1. Implement XP orb drop system on enemy death
+2. Add XP orb collection and player leveling
+3. Implement basic HUD (health, XP bar, level, kills, time)
+4. Add player-enemy collision damage
+5. Implement game over state when player health reaches 0
 
 ---
 
@@ -189,15 +190,36 @@ Focus on **algorithmic and business logic:**
 - ✅ Converted projectiles from Graphics to Sprite (entity-splat.png default)
 - ✅ Projectiles use tinting and scale matching pattern
 
+**Session 3 Completed (2025-12-14):**
+
+- ✅ Created GameEntity base class for shared Projectile/Enemy logic
+- ✅ Implemented IDamageable and IAggressor interfaces
+- ✅ Created Enemy entity class with health tracking
+- ✅ Implemented wave-based spawn system (SpawnManager)
+- ✅ Converted Player to extend GameEntity
+- ✅ Created EnBehaviorChase (enemy chase AI)
+- ✅ Implemented projectile-enemy collision with damage system
+- ✅ Created PjBehaviorDieOnHit for projectile despawning
+- ✅ Fixed projectile culling to use camera.worldView coordinates
+
 **Key Files Created:**
 
 - `src/game/GameCanvas.tsx` - Phaser game initialization
-- `src/game/scenes/GameplayScene.tsx` - Main game scene with projectile pooling
+- `src/game/scenes/GameplayScene.tsx` - Main game scene with entity pooling and collision
+- `src/game/entities/GameEntity.ts` - Base class for all poolable entities
 - `src/game/entities/Player.ts` - Player with WASD movement, rotation, weapon firing
 - `src/game/entities/Projectile.ts` - Poolable projectile with behavior system
-- `src/game/behaviors/weapons/StraightMovement.ts` - Projectile movement behavior
+- `src/game/entities/Enemy.ts` - Enemy entity with health and AI behaviors
+- `src/game/systems/SpawnManager.ts` - Wave-based enemy spawning system
+- `src/game/behaviors/weapons/PjBehaviorStraightMovement.ts` - Projectile movement
+- `src/game/behaviors/weapons/PjBehaviorDieOnHit.ts` - Projectile damage and despawn
+- `src/game/behaviors/weapons/PjBehaviorOffScreenCull.ts` - Spatial culling
+- `src/game/behaviors/enemies/EnBehaviorChase.ts` - Enemy chase AI
 - `src/game/behaviors/util.ts` - Level-scaling parameter evaluation
+- `src/game/interfaces/IDamageable.ts` - Damage system interface
 - `src/config/weapons.ts` - Weapon definitions and types
+- `src/config/enemies.ts` - Enemy definitions (Chaser config)
+- `src/config/waves.ts` - Wave-based spawn configuration
 - `src/config/constants.ts` - Base resolution (800x600)
 - `src/config/tweaks.ts` - Balance values (player speed, radius, etc.)
 
@@ -209,53 +231,57 @@ Focus on **algorithmic and business logic:**
 - Unused parameters prefixed with `_` and named for clarity
 - Config files for all tweakable values
 
+**Entity System Architecture:**
+
+- **GameEntity Base Class:**
+  - Unified architecture for Player, Projectile, Enemy
+  - Handles spawn/despawn lifecycle with pooling
+  - Manages physics body setup (texture scaling, circular collision)
+  - ID generation: `constructor.name-${counter}` pattern
+  - Module-level lookup tables for entity access by ID
+
+- **Damage System:**
+  - `IDamageable` interface: `doDamage(amount, source)`
+  - `IAggressor` interface: tracks target entity type
+  - Type guard pattern: `entity.isDamageable()`
+  - Enemies track health and handle death on 0 HP
+
+- **Behavior System:**
+  - Generic `EntityBehavior<TEntity>` interface
+  - Hooks: `onSpawn`, `onUpdate`, `onHitOther`, `onDespawn`
+  - Projectile behaviors: `PjBehavior*` prefix
+  - Enemy behaviors: `EnBehavior*` prefix
+  - Composition over inheritance - mix and match behaviors
+
 **Weapon System Architecture:**
 
-- **Player Weapon Array:** Player owns `PlayerWeapon[]` - can stack multiple weapons like Vampire Survivors
+- **Player Weapon Array:** Player owns `PlayerWeapon[]` - can stack multiple weapons
   - Each weapon has: `{ config: WeaponConfig, level: number, fireTimer: number }`
-  - No max weapon count (can add limit later)
   - Starting weapons defined in config array
-
-- **Composition-Based Behaviors:**
-  - Projectile behaviors defined in weapon config (movement, collision, effects)
-  - Behaviors implement optional hooks: `onSpawn`, `onUpdate`, `onHitEnemy`, `onDeath`
-  - No complex behavior communication - designer chooses compatible behaviors
-  - Projectile references weapon instance (doesn't copy behaviors)
 
 - **Infinite Scaling via Functions:**
   - Behavior params can be static values OR functions: `(level: number) => value`
   - Allows per-stat scaling: linear, exponential, stepped, capped, etc.
-  - Examples:
-    - `damage: (level) => 10 * Math.pow(1.15, level)` - exponential
-    - `pierce: (level) => Math.floor(level / 3)` - unlock at levels 3, 6, 9...
-    - `speed: 300` - never scales
 
-- **Core Projectile Behaviors (Session 1):**
-  - `StraightMovement` - constant velocity in direction
-  - `DieOnHit` - kill projectile on enemy collision (tracks `lastHitEnemy` for O(1) lookup)
-  - `OffScreenCull` - camera-relative culling at full viewport distance
-  - `ApplyDamage` - deal damage to enemy on hit
+- **Implemented Projectile Behaviors:**
+  - `PjBehaviorStraightMovement` - constant velocity in direction
+  - `PjBehaviorDieOnHit` - deal damage and despawn on enemy collision
+  - `PjBehaviorOffScreenCull` - camera-relative culling with squared distance
 
-- **Future Features (Later Sessions):**
-  - Firing patterns: burst fire, charge shots, irregular timing
-  - Advanced behaviors: Pierce, Homing, Explode, Chain, SineWave, TimeToLive
-  - Non-projectile powers: auras (garlic), orbitals, zones
+**Spawn System Architecture:**
 
-- **Performance:**
-  - Physics group pooling for projectile reuse
-  - Single `lastHitEnemy` reference (not Set) - O(1) vs O(n)
-  - Edge case acceptable: projectile A→B→A may re-damage A
+- **SpawnManager:** Wave-based enemy spawning
+  - Wave config defines enemy types, counts, and delays
+  - Spawns at random angles around camera at 0.6x viewport distance
+  - Loops last wave infinitely for endless mode
+  - Data-driven configuration in `waves.ts`
 
-**Next Steps (Session 3):**
+- **Enemy Behaviors:**
+  - `EnBehaviorChase` - chase player with level-scaled speed
+  - Future: Orbiter, Tank, etc.
 
-1. Add per-weapon projectile texture config (currently all use entity-splat)
-2. Create Enemy (Chaser) entity class
-3. Implement enemy spawning system
-4. Set up collision detection (projectile-enemy overlap)
-5. Implement remaining projectile behaviors:
-   - ApplyDamage (deal damage on hit)
-   - DieOnHit (despawn after hitting enemy)
-6. XP orb drop system
-7. XP collection and leveling
-8. Basic HUD (health, XP bar, level, kills, time)
-9. Game over state
+**Performance:**
+
+- Physics group pooling for all entities
+- Squared distance checks (avoids sqrt)
+- Minimal GC pressure via object reuse
