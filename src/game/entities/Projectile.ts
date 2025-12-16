@@ -1,3 +1,5 @@
+import { Trail } from 'phaser-trail-renderer'
+
 import { WEAPON_PROPERTIES } from '@/config/weapons'
 import type { PlayerWeapon } from './Player'
 import { evaluateScalableParam } from '../behaviors/util'
@@ -15,6 +17,7 @@ interface Props extends SpawnProps {
 export class Projectile extends GameEntity implements ILeveledEntity, IAggressor {
   private weaponConfig: PlayerWeapon
   private lastHitDamageable: IDamageable | null
+  private trail: Trail
 
   constructor(scene: Phaser.Scene) {
     super(scene)
@@ -24,6 +27,13 @@ export class Projectile extends GameEntity implements ILeveledEntity, IAggressor
       level: 0,
       fireTimer: 0,
     }
+    this.trail = new Trail(this.scene, {
+      color: 0x00ffff,
+      baseWidth: 3,
+      tailWidth: 0.5,
+      baseAlpha: 1,
+      tailAlpha: 0,
+    })
   }
 
   /**
@@ -48,13 +58,18 @@ export class Projectile extends GameEntity implements ILeveledEntity, IAggressor
     for (const behavior of wpn.behaviors) {
       behavior.onSpawn?.(this)
     }
+
+    this.trail.clearTrail()
+    this.trail.setActive(true)
+    this.trail.setVisible(true)
   }
 
-  public update(dt: number) {
+  public update(t: number, dt: number) {
     for (const behavior of WEAPON_PROPERTIES[this.weaponConfig.type].behaviors) {
       behavior.onUpdate?.(this, dt)
     }
     this.handleSpatialDespawn()
+    this.trail.update(this.x, this.y, t)
   }
 
   public handleSpatialDespawn() {
@@ -83,6 +98,9 @@ export class Projectile extends GameEntity implements ILeveledEntity, IAggressor
     }
 
     this.lastHitDamageable = null
+
+    this.trail.setActive(false)
+    this.trail.setVisible(false)
 
     super.despawn()
   }
