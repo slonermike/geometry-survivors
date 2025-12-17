@@ -2,8 +2,12 @@ import Phaser from 'phaser'
 import { useEffect, useRef } from 'react'
 import { GameplayScene } from './scenes/GameplayScene'
 import tweaks from '@/config/tweaks'
+import { GameEventBridge } from './events/GameEventBridge'
+import { PhaserEventBus } from './events/PhaserEventBus'
+import { store } from '@/store/store'
 
 let game: Phaser.Game | null = null
+let bridge: GameEventBridge | null = null
 
 export function GameCanvas() {
   const containerRef = useRef<HTMLDivElement>(null)
@@ -51,7 +55,14 @@ export function GameCanvas() {
     }
     game = new Phaser.Game(config)
 
+    // Set up event bridge
+    bridge = new GameEventBridge(store.dispatch)
+    const eventBus = new PhaserEventBus(game.events)
+    bridge.connect(eventBus)
+
     return () => {
+      bridge?.disconnect()
+      bridge = null
       game?.destroy(true, false)
       game = null
     }

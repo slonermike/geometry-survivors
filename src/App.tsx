@@ -1,8 +1,14 @@
-import './App.css';
-import { GameCanvas } from './game/GameCanvas';
+import './App.css'
+import { GameCanvas } from './game/GameCanvas'
+import { HUD } from './views/HUD'
 
 function App() {
-  return <GameCanvas />;
+  return (
+    <>
+      <GameCanvas />
+      <HUD />
+    </>
+  )
 }
 
-export default App;
+export default App

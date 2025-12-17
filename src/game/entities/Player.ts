@@ -7,6 +7,7 @@ import { evaluateScalableParam } from '../behaviors/util'
 import { GameEntity } from './GameEntity'
 import type { IDamageable } from './IDamageable'
 import type { IAggressor } from './IAggressor'
+import { emitGameEvent } from '../events/emitGameEvent'
 
 let pjIdCounter = 0
 let playerIdCounter = 0
@@ -22,7 +23,7 @@ export class Player extends GameEntity implements IDamageable {
   private cursors: Phaser.Types.Input.Keyboard.CursorKeys | undefined
   private projectilePool: Phaser.Physics.Arcade.Group
   private weapons: PlayerWeapon[] = []
-  private health: number
+  private health: number = 0
 
   constructor(
     scene: GameplayScene,
@@ -52,7 +53,19 @@ export class Player extends GameEntity implements IDamageable {
     )
 
     this.cursors = scene.input.keyboard?.createCursorKeys()
-    this.health = tweaks.player.baseMaxHealth
+
+    this.setHealth(tweaks.player.baseMaxHealth)
+  }
+
+  private setHealth(health: number) {
+    this.health = health
+
+    emitGameEvent(this.scene.game.events, 'player-health-changed', {
+      health: this.health,
+
+      // TODO: update this when we make it scalable to upgrade levels.
+      maxHealth: tweaks.player.baseMaxHealth,
+    })
   }
 
   update(dt: number) {
@@ -115,12 +128,7 @@ export class Player extends GameEntity implements IDamageable {
   }
 
   doDamage(damageAmount: number, _source: IAggressor) {
-    this.health = Math.max(0, this.health - damageAmount)
-    if (this.health === 0) {
-      console.log('YA BURNT')
-    } else {
-      console.log(`HP: ${this.health}`)
-    }
+    this.setHealth(Math.max(0, this.health - damageAmount))
   }
 
   public isDamageable(): this is IDamageable {
