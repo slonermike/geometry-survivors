@@ -3,8 +3,8 @@
 ## Project Status
 
 **Current Phase:** Evening 1 - Core Game Loop
-**Last Updated:** 2025-12-15
-**Status:** Combat system complete, ready for XP/leveling
+**Last Updated:** 2025-12-16
+**Status:** Combat system complete, health HUD implemented, ready for player damage and XP/leveling
 
 ---
 
@@ -24,9 +24,10 @@
 - [x] Enemy spawning system with wave-based configuration
 - [x] Collision detection (player-enemy, projectile-enemy)
 - [x] Enemy dies at 0 HP
+- [x] Basic HUD showing health (partial - health display working)
 - [ ] XP orb drop on enemy death
 - [ ] Player collects XP, levels up at thresholds
-- [ ] Basic HUD showing health, XP bar, level, kills, time
+- [ ] HUD: XP bar, level, kills, time (remaining components)
 - [ ] Game over when player health reaches 0
 
 **Unit Tests:**
@@ -106,10 +107,10 @@
 
 ## Current Next Steps
 
-1. Implement XP orb drop system on enemy death
-2. Add XP orb collection and player leveling
-3. Implement basic HUD (health, XP bar, level, kills, time)
-4. Add player-enemy collision damage
+1. Add player-enemy collision damage (health system is ready)
+2. Implement XP orb drop system on enemy death
+3. Add XP orb collection and player leveling
+4. Complete HUD (add XP bar, level, kills, time displays)
 5. Implement game over state when player health reaches 0
 
 ---
@@ -124,11 +125,28 @@
 - Direct JavaScript manipulation
 - NO Redux at this layer
 
-**Tier 2 - Redux Application State (~10fps):**
+**Tier 2 - Redux Application State (event-driven):**
 
 - Player stats (health, XP, level, kills)
 - UI state (pause, upgrade menus)
-- Batched updates every 100ms via GameBridge
+- Updates via event-driven GameEventBridge
+
+### Game-to-UI Bridge Architecture
+
+**Event-Driven Communication:**
+
+- **GameEventBus Interface:** Type-safe contract for game events, hides Phaser internals from UI
+- **PhaserEventBus:** Concrete wrapper around `scene.events` EventEmitter
+- **GameEventBridge:** Subscribes to game events, dispatches Redux actions
+- **emitGameEvent():** Typed helper for emitting events from Phaser code
+- **Flow:** `Player.doDamage()` → `emitGameEvent()` → `scene.events` → `GameEventBridge` → `dispatch(updatePlayerHealth())` → Redux → React re-renders
+
+**Benefits:**
+
+- Loose coupling: Phaser and React remain independent
+- Type safety: TypeScript enforces event name/data contract
+- Testable: Bridge can be tested without Phaser or React
+- Clean separation: Game logic doesn't know about Redux, UI doesn't know about Phaser
 
 ### Key Technical Patterns
 
@@ -202,21 +220,39 @@ Focus on **algorithmic and business logic:**
 - ✅ Created PjBehaviorDieOnHit for projectile despawning
 - ✅ Fixed projectile culling to use camera.worldView coordinates
 
+**Session 4 Completed (2025-12-16):**
+
+- ✅ Added enemy-enemy collision to prevent stacking
+- ✅ Implemented event-driven game-to-UI architecture
+- ✅ Created GameEventBus interface for type-safe events
+- ✅ Built GameEventBridge to connect Phaser events to Redux
+- ✅ Set up Redux store with playerSlice for UI state
+- ✅ Created typed event emitter helper for Phaser code
+- ✅ Implemented player health tracking and emission
+- ✅ Built HUD with HealthDisplay component (styled with semi-transparent background, rounded corners, drop shadow)
+
 **Key Files Created:**
 
-- `src/game/GameCanvas.tsx` - Phaser game initialization
+- `src/game/GameCanvas.tsx` - Phaser game initialization and event bridge setup
 - `src/game/scenes/GameplayScene.tsx` - Main game scene with entity pooling and collision
 - `src/game/entities/GameEntity.ts` - Base class for all poolable entities
-- `src/game/entities/Player.ts` - Player with WASD movement, rotation, weapon firing
+- `src/game/entities/Player.ts` - Player with WASD movement, rotation, weapon firing, health tracking
 - `src/game/entities/Projectile.ts` - Poolable projectile with behavior system
 - `src/game/entities/Enemy.ts` - Enemy entity with health and AI behaviors
-- `src/game/systems/SpawnManager.ts` - Wave-based enemy spawning system
+- `src/game/managers/SpawnManager.ts` - Wave-based enemy spawning system
 - `src/game/behaviors/weapons/PjBehaviorStraightMovement.ts` - Projectile movement
 - `src/game/behaviors/weapons/PjBehaviorDieOnHit.ts` - Projectile damage and despawn
 - `src/game/behaviors/weapons/PjBehaviorOffScreenCull.ts` - Spatial culling
 - `src/game/behaviors/enemies/EnBehaviorChase.ts` - Enemy chase AI
 - `src/game/behaviors/util.ts` - Level-scaling parameter evaluation
+- `src/game/events/GameEventBus.ts` - Type-safe event interface and types
+- `src/game/events/PhaserEventBus.ts` - Phaser EventEmitter wrapper
+- `src/game/events/GameEventBridge.ts` - Event-to-Redux bridge
+- `src/game/events/emitGameEvent.ts` - Typed event emission helper
 - `src/game/interfaces/IDamageable.ts` - Damage system interface
+- `src/store/store.ts` - Redux store configuration
+- `src/store/playerSlice.ts` - Player state slice (health, maxHealth)
+- `src/store/hooks.ts` - Typed Redux hooks (useAppDispatch, useAppSelector)
 - `src/config/weapons.ts` - Weapon definitions and types
 - `src/config/enemies.ts` - Enemy definitions (Chaser config)
 - `src/config/waves.ts` - Wave-based spawn configuration
