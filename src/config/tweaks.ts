@@ -27,7 +27,7 @@ export default {
     enemy: 400,
   },
   debug: {
-    physics: true,
+    physics: false,
   },
   rendering: {
     bloom: {

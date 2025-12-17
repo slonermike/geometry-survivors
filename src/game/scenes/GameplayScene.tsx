@@ -59,6 +59,9 @@ export class GameplayScene extends Phaser.Scene {
       }
     )
 
+    // Enemies don't overlap amongst themselves.
+    this.physics.add.collider(this.enemies, this.enemies)
+
     // Set initial zoom
     const zoom = Math.min(
       this.scale.width / tweaks.baseResolution.width,
